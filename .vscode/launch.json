@@ -1,31 +1,23 @@
 {
-    "version": "0.2.0",
+    "version": "2.0.0",
     "configurations": [
+
         {
-            "name": "C/C++: g++ Compilar y depurar el archivo activo",
+            "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Habilitar la impresión con sangría para gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Establecer tipo de desensamblado en Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "C/C++: g++ compilar archivo activo",
-            "miDebuggerPath": "/usr/bin/gdb"
+            "program": "${workspaceRoot}/practica1",
+            "cwd": "${workspaceRoot}",
+            "args": ["mapas/mapa30.map", "1", "0", "6", "12", "4"],
+            // "preLaunchTask": "build",
+            // set environment variables
+            // "environment": [
+            //     {
+            //         "name": "DISPLAY",
+            //         "value": ":1.0"
+            //     }
+            // ],
+            
         }
     ]
 }

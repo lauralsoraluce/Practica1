@@ -77,272 +77,24 @@ Action ComportamientoJugador::think(Sensores sensores){
 		bien_situado = true;
 	}
 
-	if (last_action == actFORWARD) { //Si he cambiado de casilla, apunto que he visitado la casilla actual. 
+	if (last_action==actFORWARD){
+		if (sensores.terreno[0]=='K')
+			bikini=true;
+		else if (sensores.terreno[0]=='D')
+			zapatillas=true;
+	}
+
+	if (last_action == actFORWARD or last_action == actIDLE) { //Si he cambiado de casilla, apunto que he visitado la casilla actual. 
 		mapaVisitas[current_state.fil][current_state.col]++;
 	}
 
 	if(bien_situado){
-		mapaResultado[current_state.fil][current_state.col] = sensores.terreno[0];
+		//mapaResultado[current_state.fil][current_state.col] = sensores.terreno[0];
+		PonerTerrenoEnMatriz(sensores.terreno, current_state, mapaResultado);
 	}
 
 	// INTENTO DE ACTUALIZACIÓN DE MOVIMIENTO EN EL MAPA
-	menosVisitada.fil=-1;
-	menosVisitada.col=-1;
-	switch(current_state.brujula){ 
-		case norte: 
-			if (current_state.fil-1>=0) {
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.fil-1>=0 and current_state.col+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.fil-1>=0 and current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.fil+1<100 and current_state.col+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.fil-1>=0 and current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_BL;
-			}
-			break; //Si estaba mirando al norte
-		case noreste:
-			if (current_state.fil-1>=0 and current_state.col+1<100) {
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col+1; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.col+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.fil-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.fil+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-		case este:
-			if (current_state.col+1<100) {
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col+1; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.fil+1<100 and current_state.col+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.fil-1>=0 and current_state.col+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.fil+1<100 and current_state.col-1>=0 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.fil-1>=0 and current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-		case sureste:
-			if (current_state.fil+1<100 and current_state.col+1<100) {
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col+1; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.fil+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.col+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.col-1>=0 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.fil-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-		case sur:
-			if (current_state.fil+1<100) {
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.fil+1<100 and current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.fil+1<100 and current_state.col+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.fil-1>=0 and current_state.col-1>=0 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.fil-1>=0 and current_state.col+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-		case suroeste:
-			if (current_state.fil+1<100 and current_state.col-1>=0) {
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col-1; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.fil+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.fil-1>=0 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.col+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-		case oeste:
-			if (current_state.col-1>=0) {
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col-1; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.fil-1>=0 and current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.fil+1<100 and current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.fil-1>=0 and current_state.col+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.fil+1<100 and current_state.col+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-		case noroeste:
-			if (current_state.fil-1>=0 and current_state.col-1>=0) {
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col-1; 
-				proximaAccion = actFORWARD;
-			}
-			if (current_state.fil-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil-1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil-1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_SR;
-			}
-			if (current_state.col-1>=0 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col-1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col-1;
-				proximaAccion = actTURN_SL;
-			}
-			if (current_state.col+1<100 and
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil][current_state.col+1]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil;
-				menosVisitada.col = current_state.col+1;
-				proximaAccion = actTURN_BR;
-			}
-			if (current_state.fil+1<100 and 
-			(menosVisitada.fil=-1 || mapaVisitas[current_state.fil+1][current_state.col]<mapaVisitas[menosVisitada.fil][menosVisitada.col])){
-				menosVisitada.fil = current_state.fil+1;
-				menosVisitada.col = current_state.col;
-				proximaAccion = actTURN_BL;
-			} 
-			break;
-	}
-	accion = proximaAccion;
-	last_action=accion;
-
-	/*
-	if((sensores.terreno[2] == 'T' or sensores.terreno[2] == 'S' or sensores.terreno[2] == 'G') and sensores.superficie[2] == '_'){
+	/*if((sensores.terreno[2] == 'T' or sensores.terreno[2] == 'S' or sensores.terreno[2] == 'G') and sensores.superficie[2] == '_'){
 		accion = actFORWARD;
 	}
 	else if(!girar_derecha){
@@ -367,9 +119,21 @@ Action ComportamientoJugador::think(Sensores sensores){
 	}
 
 	last_action = accion;
-	*/
-
-	return accion;
+	
+	return accion;*/
+	/*last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
+	return last_action;*/
+	
+	if ((last_action==actTURN_SL or last_action==actTURN_SR) and (sensores.terreno[1]=='K' or sensores.terreno[1]=='D')){
+		last_action=actFORWARD;
+		accion=last_action;
+		return last_action;
+	}
+	else {
+		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
+		accion=last_action;
+		return last_action;
+	}
 	
 }
 
