@@ -190,22 +190,112 @@ class ComportamientoJugador : public Comportamiento{
 	  }
   }
 
-  Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &st, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &matriz2){
+  Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const int &bateria, const state &st, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &matriz2){
     menosVisitada.fil=0;
     menosVisitada.col=0;
     bool picked=false;
+    zapatillas=true;
+    bikini=true;
 
+    if (terreno[0]=='X' and bateria<5000){
+      proximaAccion=actIDLE;
+      return proximaAccion;
+    }
+
+    if (terreno[2]!='P'){
+      if (terreno[2]=='X'){
+        proximaAccion=actFORWARD;
+      }
+      else if (!zapatillas and terreno[2]=='D'){
+        proximaAccion=actFORWARD;
+      }
+      else if (!bikini and terreno[2]=='K'){
+        proximaAccion=actFORWARD;
+      }
+    else {
     switch(current_state.brujula){
       case norte:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[2]=='X'){
+            proximaAccion=actFORWARD;
+            break;
+          }
+          else if (!zapatillas and terreno[2]=='D'){
+            proximaAccion=actFORWARD;
+            break;
+          }
+          else if (!bikini and terreno[2]=='K'){
+            proximaAccion=actFORWARD;
+            break;
+          }*/
+          if (terreno[2]=='S' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='T' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)] or !picked)) {
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (bikini and terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          /*else if (zapatillas and terreno[i]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-2+i] or !picked)){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col)-2+i;
+            switch(i){
+            case 1:
+              proximaAccion=actFORWARD;
+              break;
+            case 2:
+              proximaAccion=actTURN_SL;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            picked=true;
+          }*/
+          else if (terreno[2]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        // AHORA PARA GIRAR A LA IZQ Y GIRAR A LA DCHA
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -218,9 +308,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -231,9 +318,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -248,9 +332,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -264,9 +345,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -279,9 +357,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -312,9 +387,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -328,13 +400,14 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
               }
+              picked=true;
+            }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
               picked=true;
             }
             if (!picked){
@@ -344,9 +417,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -354,22 +424,93 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case sur:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[2]=='X'){
+            proximaAccion=actFORWARD;
+            break;
+          }
+          else if (!zapatillas and terreno[2]=='D'){
+            proximaAccion=actFORWARD;
+            break;
+          }
+          else if (!bikini and terreno[2]=='K'){
+            proximaAccion=actFORWARD;
+            break;
+          }*/
+          if (terreno[2]=='S' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='T' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (bikini and terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          /*else if (zapatillas and terreno[i]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+2-i] or !picked)){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col)-i+2;
+            switch(i){
+            case 1:
+              proximaAccion=actFORWARD;
+              break;
+            case 2:
+              proximaAccion=actTURN_SL;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            picked=true;
+          }*/
+          else if (terreno[2]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)] or !picked)){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col);
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -382,9 +523,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -395,9 +533,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -412,9 +547,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -428,9 +560,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -443,9 +572,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -476,9 +602,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -492,13 +615,14 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
               }
+              picked=true;
+            }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
               picked=true;
             }
             if (!picked){
@@ -508,9 +632,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -518,22 +639,123 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case este:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[i]=='X'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!zapatillas and terreno[i]=='D'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!bikini and terreno[i]=='K'){
+            switch(i){
+            case 1:
+              proximaAccion=actTURN_SL;
+              break;
+            case 2:
+              proximaAccion=actFORWARD;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            break;
+          }*/
+          if (terreno[2]=='S' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='T' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (bikini and terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          /*else if (zapatillas and terreno[i]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-2+i][(current_state.col)+1] or !picked)){
+            menosVisitada.fil=(current_state.fil)-2+i;
+            menosVisitada.col=(current_state.col)+1;
+            switch(i){
+            case 1:
+              proximaAccion=actFORWARD;
+              break;
+            case 2:
+              proximaAccion=actTURN_SL;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            picked=true;
+          }*/
+          else if (terreno[2]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -546,9 +768,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -559,9 +778,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -576,9 +792,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -592,9 +805,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -607,9 +817,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -640,9 +847,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -656,13 +860,14 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
               }
+              picked=true;
+            }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
               picked=true;
             }
             if (!picked){
@@ -672,9 +877,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -682,22 +884,123 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case oeste:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[i]=='X'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!zapatillas and terreno[i]=='D'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!bikini and terreno[i]=='K'){
+            switch(i){
+            case 1:
+              proximaAccion=actTURN_SL;
+              break;
+            case 2:
+              proximaAccion=actFORWARD;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            break;
+          }*/
+          if (terreno[2]=='S' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)-1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='T' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)-1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (bikini and terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)-1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          /*else if (zapatillas and terreno[i]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+2-i][(current_state.col)-1] or !picked)){
+            menosVisitada.fil=(current_state.fil)+2-i;
+            menosVisitada.col=(current_state.col)-1;
+            switch(i){
+            case 1:
+              proximaAccion=actFORWARD;
+              break;
+            case 2:
+              proximaAccion=actTURN_SL;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            picked=true;
+          }*/
+          else if (terreno[2]=='B' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)-1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='A' and (mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)-1] or !picked)){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil);
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -710,9 +1013,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -723,9 +1023,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -740,9 +1037,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -756,9 +1050,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -771,9 +1062,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -804,9 +1092,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -820,13 +1105,14 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
               }
+              picked=true;
+            }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
               picked=true;
             }
             if (!picked){
@@ -836,9 +1122,6 @@ class ComportamientoJugador : public Comportamiento{
               case 1:
                 proximaAccion=actTURN_SL;
                 break;
-              case 2:
-                proximaAccion=actFORWARD;
-                break;
               case 3:
                 proximaAccion=actTURN_SR;
                 break;
@@ -846,22 +1129,145 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actTURN_SL;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case noroeste:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[2]=='X'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!zapatillas and terreno[i]=='D'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!bikini and terreno[i]=='K'){
+            switch(i){
+            case 1:
+              proximaAccion=actTURN_SL;
+              break;
+            case 2:
+              proximaAccion=actFORWARD;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            break;
+          }*/
+          if (terreno[2]=='S'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='T') {
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (bikini and terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          /*else if (zapatillas and terreno[i]=='B'){
+            switch(i){
+            case 1:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                menosVisitada.fil=(current_state.fil);
+                menosVisitada.col=(current_state.col)-1;
+                proximaAccion=actFORWARD;
+                picked=true;
+              }
+              break;
+            case 2:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                menosVisitada.fil=(current_state.fil)-1;
+                menosVisitada.col=(current_state.col)-1;
+                proximaAccion=actTURN_SL;
+                picked=true;
+              }
+              break;
+            case 3:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                menosVisitada.fil=(current_state.fil)-1;
+                menosVisitada.col=(current_state.col);
+                proximaAccion=actTURN_SR;
+                picked=true;
+              }
+              break;
+            }
+          }*/
+          else if (terreno[2]=='B'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -874,9 +1280,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -887,9 +1290,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -904,14 +1304,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil);
                   menosVisitada.col=(current_state.col)-1;
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -935,14 +1327,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
                   menosVisitada.fil=(current_state.fil)-1;
@@ -960,14 +1344,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil);
                   menosVisitada.col=(current_state.col)-1;
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1019,14 +1395,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
                   menosVisitada.fil=(current_state.fil)-1;
@@ -1047,14 +1415,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
                   menosVisitada.fil=(current_state.fil)-1;
@@ -1065,17 +1425,16 @@ class ComportamientoJugador : public Comportamiento{
                 break;
               }
             }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
+              picked=true;
+            }
             if (!picked){
               switch(i){
               case 1:
                 menosVisitada.fil=(current_state.fil);
                 menosVisitada.col=(current_state.col)-1;
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                menosVisitada.fil=(current_state.fil)-1;
-                menosVisitada.col=(current_state.col)-1;
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 menosVisitada.fil=(current_state.fil)-1;
@@ -1086,22 +1445,145 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case noreste:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[2]=='X'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!zapatillas and terreno[i]=='D'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!bikini and terreno[i]=='K'){
+            switch(i){
+            case 1:
+              proximaAccion=actTURN_SL;
+              break;
+            case 2:
+              proximaAccion=actFORWARD;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            break;
+          }*/
+          if (terreno[2]=='S'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='T') {
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (bikini and terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          /*else if (zapatillas and terreno[i]=='B'){
+            switch(i){
+            case 1:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)]) {
+                menosVisitada.fil=(current_state.fil)-1;
+                menosVisitada.col=(current_state.col);
+                proximaAccion=actFORWARD;
+                picked=true;
+              }
+              break;
+            case 2:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
+                menosVisitada.fil=(current_state.fil)-1;
+                menosVisitada.col=(current_state.col)+1;
+                proximaAccion=actTURN_SL;
+                picked=true;
+              }
+              break;
+            case 3:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1]) {
+                menosVisitada.fil=(current_state.fil);
+                menosVisitada.col=(current_state.col)+1;
+                proximaAccion=actTURN_SR;
+                picked=true;
+              }
+              break;
+            }
+          }*/
+          else if (terreno[2]=='B'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
+              menosVisitada.fil=(current_state.fil)-1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil)-1;
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -1114,9 +1596,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -1127,9 +1606,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -1144,14 +1620,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil)-1;
                   menosVisitada.col=(current_state.col);
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1175,14 +1643,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1]) {
                   menosVisitada.fil=(current_state.fil);
@@ -1200,14 +1660,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil)-1;
                   menosVisitada.col=(current_state.col);
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1259,14 +1711,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1]) {
                   menosVisitada.fil=(current_state.fil);
@@ -1287,14 +1731,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]) {
-                  menosVisitada.fil=(current_state.fil)-1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1]) {
                   menosVisitada.fil=(current_state.fil);
@@ -1305,17 +1741,16 @@ class ComportamientoJugador : public Comportamiento{
                 break;
               }
             }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
+              picked=true;
+            }
             if (!picked){
               switch(i){
               case 1:
                 menosVisitada.fil=(current_state.fil)-1;
                 menosVisitada.col=(current_state.col);
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                menosVisitada.fil=(current_state.fil)-1;
-                menosVisitada.col=(current_state.col)+1;
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 menosVisitada.fil=(current_state.fil);
@@ -1326,22 +1761,145 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case sureste:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[i]=='X'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!zapatillas and terreno[i]=='D'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!bikini and terreno[i]=='K'){
+            switch(i){
+            case 1:
+              proximaAccion=actTURN_SL;
+              break;
+            case 2:
+              proximaAccion=actFORWARD;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            break;
+          }*/
+          if (terreno[2]=='S'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='T') {
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (bikini and terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          /*else if (zapatillas and terreno[i]=='B'){
+            switch(i){
+            case 1:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                menosVisitada.fil=(current_state.fil);
+                menosVisitada.col=(current_state.col)+1;
+                proximaAccion=actFORWARD;
+                picked=true;
+              }
+              break;
+            case 2:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                menosVisitada.fil=(current_state.fil)+1;
+                menosVisitada.col=(current_state.col)+1;
+                proximaAccion=actTURN_SL;
+                picked=true;
+              }
+              break;
+            case 3:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                menosVisitada.fil=(current_state.fil)+1;
+                menosVisitada.col=(current_state.col);
+                proximaAccion=actTURN_SR;
+                picked=true;
+              }
+              break;
+            }
+          }*/
+          else if (terreno[2]=='B'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)+1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col)+1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -1354,9 +1912,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -1367,9 +1922,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -1384,14 +1936,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil);
                   menosVisitada.col=(current_state.col)+1;
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1415,14 +1959,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
                   menosVisitada.fil=(current_state.fil)+1;
@@ -1440,14 +1976,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil);
                   menosVisitada.col=(current_state.col)+1;
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1499,14 +2027,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
                   menosVisitada.fil=(current_state.fil)+1;
@@ -1527,14 +2047,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)+1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
                   menosVisitada.fil=(current_state.fil)+1;
@@ -1545,17 +2057,16 @@ class ComportamientoJugador : public Comportamiento{
                 break;
               }
             }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
+              picked=true;
+            }
             if (!picked){
               switch(i){
               case 1:
                 menosVisitada.fil=(current_state.fil);
                 menosVisitada.col=(current_state.col)+1;
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                menosVisitada.fil=(current_state.fil)+1;
-                menosVisitada.col=(current_state.col)+1;
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 menosVisitada.fil=(current_state.fil)+1;
@@ -1566,22 +2077,145 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
       case suroeste:
-        for (int i=1; i<4; i++){
+        if (terreno[2]!='P'){
+          /*if (terreno[i]=='X'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!zapatillas and terreno[i]=='D'){
+            switch(i){
+              case 1:
+                proximaAccion=actTURN_SL;
+                break;
+              case 2:
+                proximaAccion=actFORWARD;
+                break;
+              case 3:
+                proximaAccion=actTURN_SR;
+                break;
+            }
+            break;
+          }
+          else if (!bikini and terreno[i]=='K'){
+            switch(i){
+            case 1:
+              proximaAccion=actTURN_SL;
+              break;
+            case 2:
+              proximaAccion=actFORWARD;
+              break;
+            case 3:
+              proximaAccion=actTURN_SR;
+              break;
+            }
+            break;
+          }*/
+          if (terreno[2]=='S'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='T') {
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (bikini and terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          /*else if (zapatillas and terreno[i]=='B'){
+            switch(i){
+            case 1:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]){
+                menosVisitada.fil=(current_state.fil)+1;
+                menosVisitada.col=(current_state.col);
+                proximaAccion=actFORWARD;
+                picked=true;
+              }
+              break;
+            case 2:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
+                menosVisitada.fil=(current_state.fil)+1;
+                menosVisitada.col=(current_state.col)-1;
+                proximaAccion=actTURN_SL;
+                picked=true;
+              }
+              break;
+            case 3:
+              if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][current_state.col]-1){
+                menosVisitada.fil=(current_state.fil);
+                menosVisitada.col=(current_state.col)-1;
+                proximaAccion=actTURN_SR;
+                picked=true;
+              }
+              break;
+            }
+          }*/
+          else if (terreno[2]=='B'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='A'){
+            if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
+              menosVisitada.fil=(current_state.fil)+1;
+              menosVisitada.col=(current_state.col)-1;
+              proximaAccion=actFORWARD;
+              picked=true;
+            }
+          }
+          else if (terreno[2]=='M'){
+            proximaAccion=actTURN_SR;
+            picked=true;
+          }
+          if (!picked){
+            menosVisitada.fil=(current_state.fil)+1;
+            menosVisitada.col=(current_state.col)-1;
+            proximaAccion=actFORWARD;
+            picked=true;
+          }
+        }
+        else {
+            proximaAccion=actTURN_SR;
+            break;
+        }
+        for (int i=1; i<4; i=i+2){
           if (terreno[i]!='P'){
             if (terreno[i]=='X'){
               switch(i){
                 case 1:
                   proximaAccion=actTURN_SL;
-                  break;
-                case 2:
-                  proximaAccion=actFORWARD;
                   break;
                 case 3:
                   proximaAccion=actTURN_SR;
@@ -1594,9 +2228,6 @@ class ComportamientoJugador : public Comportamiento{
                 case 1:
                   proximaAccion=actTURN_SL;
                   break;
-                case 2:
-                  proximaAccion=actFORWARD;
-                  break;
                 case 3:
                   proximaAccion=actTURN_SR;
                   break;
@@ -1607,9 +2238,6 @@ class ComportamientoJugador : public Comportamiento{
               switch(i){
               case 1:
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 proximaAccion=actTURN_SR;
@@ -1624,14 +2252,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil)+1;
                   menosVisitada.col=(current_state.col);
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1655,14 +2275,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][current_state.col]-1){
                   menosVisitada.fil=(current_state.fil);
@@ -1680,14 +2292,6 @@ class ComportamientoJugador : public Comportamiento{
                   menosVisitada.fil=(current_state.fil)+1;
                   menosVisitada.col=(current_state.col);
                   proximaAccion=actTURN_SL;
-                  picked=true;
-                }
-                break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
                   picked=true;
                 }
                 break;
@@ -1739,14 +2343,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][current_state.col]-1){
                   menosVisitada.fil=(current_state.fil);
@@ -1767,14 +2363,6 @@ class ComportamientoJugador : public Comportamiento{
                   picked=true;
                 }
                 break;
-              case 2:
-                if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)+1][current_state.col]-1){
-                  menosVisitada.fil=(current_state.fil)+1;
-                  menosVisitada.col=(current_state.col)-1;
-                  proximaAccion=actFORWARD;
-                  picked=true;
-                }
-                break;
               case 3:
                 if (!picked or mapaVisitas[menosVisitada.fil][menosVisitada.col]>mapaVisitas[(current_state.fil)][current_state.col]-1){
                   menosVisitada.fil=(current_state.fil);
@@ -1785,17 +2373,16 @@ class ComportamientoJugador : public Comportamiento{
                 break;
               }
             }
+            else if (terreno[i]=='M'){
+              proximaAccion=actTURN_SR;
+              picked=true;
+            }
             if (!picked){
               switch(i){
               case 1:
                 menosVisitada.fil=(current_state.fil)+1;
                 menosVisitada.col=(current_state.col);
                 proximaAccion=actTURN_SL;
-                break;
-              case 2:
-                menosVisitada.fil=(current_state.fil)+1;
-                menosVisitada.col=(current_state.col)-1;
-                proximaAccion=actFORWARD;
                 break;
               case 3:
                 menosVisitada.fil=(current_state.fil);
@@ -1806,12 +2393,17 @@ class ComportamientoJugador : public Comportamiento{
               picked=true;
             }
           }
-          else {
-            proximaAccion=actFORWARD;
+          else if (!picked){
+            proximaAccion=actTURN_SR;
             break;
           }
         }
       break;
+    }
+    }
+    }
+    else {
+      proximaAccion=actTURN_SR;
     }
 
     return proximaAccion;

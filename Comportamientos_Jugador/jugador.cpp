@@ -123,15 +123,16 @@ Action ComportamientoJugador::think(Sensores sensores){
 	return accion;*/
 	/*last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
 	return last_action;*/
-	
+
 	if ((last_action==actTURN_SL or last_action==actTURN_SR) and (sensores.terreno[1]=='K' or sensores.terreno[1]=='D')){
 		last_action=actFORWARD;
 		accion=last_action;
 		return last_action;
 	}
 	else {
-		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
+		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, sensores.bateria, current_state, mapaResultado, mapaVisitas);
 		accion=last_action;
+
 		return last_action;
 	}
 	
