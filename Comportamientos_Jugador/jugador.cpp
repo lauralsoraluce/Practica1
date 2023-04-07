@@ -95,37 +95,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 		PonerTerrenoEnMatriz(sensores.terreno, current_state, mapaResultado);
 	}
 
-	// INTENTO DE ACTUALIZACIÓN DE MOVIMIENTO EN EL MAPA
-	/*if((sensores.terreno[2] == 'T' or sensores.terreno[2] == 'S' or sensores.terreno[2] == 'G') and sensores.superficie[2] == '_'){
-		accion = actFORWARD;
-	}
-	else if(!girar_derecha){
-		if (!giro_grande) {
-			accion = actTURN_SL;
-		}
-		else {
-			accion = actTURN_BL;
-		}
-		giro_grande = (rand()%2 == 0);
-		girar_derecha = (rand()%2 == 0);
-	}
-	else{
-		if (!giro_grande) {
-			accion = actTURN_SR;
-		}
-		else {
-			accion = actTURN_BR;
-		}
-		giro_grande = (rand()%2 == 0);
-		girar_derecha = (rand()%2 == 0);
-	}
-
-	last_action = accion;
-	
-	return accion;*/
-	/*last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
-	return last_action;*/
-
+	// SI HAY CASILLA DE RECARGA A LA VISTA VOY HACIA ELLA
 	if (sensores.terreno[0]=='X' and sensores.bateria<4980){
 		last_action=actIDLE;
 		ultima=actual;
@@ -133,30 +103,32 @@ Action ComportamientoJugador::think(Sensores sensores){
 		actual.col=current_state.col;
 		accion=last_action;
 	}
-	else if (sensores.terreno[2]=='X' and sensores.bateria<6000){
+	else if (sensores.terreno[2]=='X' and sensores.bateria<4500){
     	last_action=actFORWARD;
 	  	ultima=actual;
 		actual.fil=current_state.fil;
 		actual.col=current_state.col;
 		accion=last_action;
     }
-    else if (sensores.terreno[1]=='X' and sensores.bateria <6000){
+    else if (sensores.terreno[1]=='X' and sensores.bateria <4500){
       	last_action=actTURN_SL;
 		ultima=actual;
 		actual.fil=current_state.fil;
 		actual.col=current_state.col;
 		accion=last_action;
     }
-    else if (sensores.terreno[3]=='X' and sensores.bateria<6000){
+    else if (sensores.terreno[3]=='X' and sensores.bateria<4500){
       	last_action=actTURN_SR;
 	  	ultima=actual;
 		actual.fil=current_state.fil;
 		actual.col=current_state.col;
 		accion=last_action;
     }
+	// SI NO HAY CASILLA DE RECARGA A LA VISTA UTILIZO EL MÉTODO
 	else {
-		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, sensores.bateria, current_state, mapaResultado, mapaVisitas);
+		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
 		
+		// PARA EVITAR QUE SE QUEDE ATASCADO GIRANDO EN UNA CASILLA
 		if (ultima.fil==actual.fil and ultima.col==actual.col and last_action!=actFORWARD){
 			if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M') {
 				last_action=actFORWARD;
@@ -165,6 +137,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 				last_action=actTURN_BL;
 			}
 		}
+		// PARA EVITAR QUE ENTRE EN UN CICLO DE VARIAS CASILLAS
 		else if (mapaVisitas[current_state.fil][current_state.col]>5 and last_action!=actFORWARD){
 			if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M') {
 				last_action=actFORWARD;

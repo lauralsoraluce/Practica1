@@ -34,10 +34,9 @@ class ComportamientoJugador : public Comportamiento{
       zapatillas=false;
       bikini=false;
       posicionamiento=false;
-      /*girar_derecha = false;
-      giro_grande = false;*/
       bien_situado = false;
-      stuck=false;
+      contador_agua=0;
+      contador_bosque=0;
 
       vector<unsigned int> aux;
       for (unsigned int i = 0; i < 100; i++)
@@ -65,20 +64,45 @@ class ComportamientoJugador : public Comportamiento{
   /* Importante para los niveles del juego en los que no se dispone de sensores de orientación 
   y es el propio jugador el que tiene que guardar esta información */
 
-  bool girar_derecha;
-  bool giro_grande; // Para que también se puedan hacer los giros de 135 al moverse por el terreno
   bool bien_situado;
   bool zapatillas; 
   bool bikini;
   bool posicionamiento;
-  bool stuck;
   casilla ultima;
   casilla actual;
+  int contador_agua, contador_bosque;
 
 
   // INTENTO DE ACTUALIZACIÓN DE MAPA CUANDO LLEGUEMOS A LA CASILLA G 
     vector< vector< unsigned int> > mapaVisitas;
   Action proximaAccion;
+
+// DEVUELVE TRUE SI ESTAMOS RODEADOS DE AGUA O SI SE DESCONOCE ALGUNA PARTE DEL TERRENO ALREDEDOR NUESTRA
+  bool RodeadoAgua(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
+
+    for (int i=-1; i<2; i++){
+      for (int j=-1; j<2; j++){
+        if (!(i==0 and j==0) and matriz[(current_state.fil)+i][(current_state.col)+j]!='A'){
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  bool RodeadoBosque(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
+
+    for (int i=-1; i<2; i++){
+      for (int j=-1; j<2; j++){
+        if (!(i==0 and j==0) and matriz[(current_state.fil)+i][(current_state.col)+j]!='B'){
+          if (matriz[(current_state.fil)+i][(current_state.col)+j]!='A' or (matriz[(current_state.fil)+i][(current_state.col)+j]=='A' and bikini)){
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
 
   void PonerTerrenoEnMatriz(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
     int count=0;
@@ -90,8 +114,6 @@ class ComportamientoJugador : public Comportamiento{
               matriz[st.fil-i][st.col-i+j]=terreno[count];
               count++;
             }
-            /*if (terreno[count]=='P') 
-              parar=true;*/
           }
         break; //Si estaba mirando al norte
       case este:
@@ -100,8 +122,6 @@ class ComportamientoJugador : public Comportamiento{
               matriz[st.fil-i+j][st.col+i]=terreno[count];
               count++;
             }
-            /*if (terreno[count]=='P') 
-              parar=true;*/
           }
         break;
       case sur:
@@ -110,8 +130,6 @@ class ComportamientoJugador : public Comportamiento{
               matriz[st.fil+i][st.col-j+i]=terreno[count];
               count++;
             }
-            /*if (terreno[count]=='P') 
-              parar=true;*/
           }
         break;
       case oeste:
@@ -120,8 +138,6 @@ class ComportamientoJugador : public Comportamiento{
               matriz[st.fil+i-j][st.col-i]=terreno[count];
               count++;
             }
-            /*if (terreno[count]=='P') 
-              parar=true;*/
           }
         break;
       case noroeste:
@@ -199,55 +215,7 @@ class ComportamientoJugador : public Comportamiento{
 	  }
   }
 
-  Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const int &bateria, const state &st, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &matriz2){
-
-    /*if (terreno[2]=='M'){
-      if (terreno[3]=='M'){
-        if (terreno[1]=='M'){
-          proximaAccion=actTURN_BL;
-          return proximaAccion;
-        }
-        else if (terreno[1]=='P'){
-          proximaAccion=actTURN_BR;
-          return proximaAccion;
-        }
-        proximaAccion=actTURN_SL;
-        return proximaAccion;
-      }
-      if (terreno[1]=='M'){
-        if (terreno[3]=='P'){
-          proximaAccion=actTURN_BL;
-          return proximaAccion;
-        }
-        proximaAccion=actTURN_SR;
-        return proximaAccion;
-      }
-      proximaAccion=actTURN_SR;
-      return proximaAccion;
-    }
-    else if (terreno[1]=='M'){
-      if (terreno[2]!='P'){
-        proximaAccion=actFORWARD;
-        return proximaAccion;
-      }
-      else {
-        proximaAccion=actTURN_BR;
-      }
-    }
-    else if (terreno[3]=='M'){
-      if (terreno[2]!='P'){
-        proximaAccion=actFORWARD;
-        return proximaAccion;
-      }
-      else {
-        proximaAccion=actTURN_BL;
-      }
-    }*/
-
-    /*if (terreno[0]=='X' and bateria<5000){
-      proximaAccion=actIDLE;
-      return proximaAccion;
-    }*/
+  Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &current_state, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &mapaVisitas){
 
     if (!zapatillas and terreno[2]=='D'){
       proximaAccion=actFORWARD;
@@ -369,7 +337,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -730,7 +698,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -801,77 +769,35 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='B'){
           proximaAccion=actTURN_SR;
         }
+
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
+        }
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
-                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else {
-                proximaAccion=actTURN_SR;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case noreste:
@@ -948,7 +874,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -1309,7 +1235,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -1381,79 +1307,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
-                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
-                proximaAccion=actTURN_SR;
-              }
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case este:
@@ -1530,7 +1411,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -1891,7 +1772,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -1963,79 +1844,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
-                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                proximaAccion=actTURN_SR;
-              }
-              else{
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case sureste:
@@ -2112,7 +1948,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -2473,7 +2309,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -2545,79 +2381,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
-                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
-                proximaAccion=actTURN_SR;
-              }
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case sur:
@@ -2694,7 +2485,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -3055,7 +2846,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -3127,79 +2918,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
-                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
-                proximaAccion=actTURN_SR;
-              }
-              else{
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case suroeste:
@@ -3276,7 +3022,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -3637,7 +3383,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -3709,79 +3455,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
-                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
-                proximaAccion=actTURN_SR;
-              }
-              else{
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case oeste:
@@ -3858,7 +3559,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -4219,7 +3920,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -4291,79 +3992,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
-                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-                proximaAccion=actTURN_SR;
-              }
-              else{
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
       case noroeste:
@@ -4440,7 +4096,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        if (!bikini and terreno[2]=='K'){
+        else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -4801,7 +4457,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
 
-        // BOSQUE (CON O SIN ZAPATILLAS)
+        // BOSQUE CON ZAPATILLAS
         else if (terreno[2]=='B'){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
@@ -4873,79 +4529,34 @@ class ComportamientoJugador : public Comportamiento{
           proximaAccion=actTURN_SR;
         }
         
-        // AGUA SIN BIKINI
-        /*else if (terreno[2]=='A'){
-          if (terreno[1]=='A'){
-            // Si las tres casillas coinciden
-            if (terreno[3]=='A'){
-              // Si la 2 es la menos visitada
-              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
-                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
-                proximaAccion=actFORWARD;
-              }
-              // Si la 1 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 3 es la menos visitada
-              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
-                proximaAccion=actTURN_SR;
-              }
-              else{
-                proximaAccion=actFORWARD;
-              }
-            }
-            // Si sólo coinciden la 1 y la 2
-            else {
-              // Si la 1 es la menos visitada
-              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
-                proximaAccion=actTURN_SL;
-              }
-              // Si la 2 es la menos visitada
-              else {
-                proximaAccion=actFORWARD;
-              }
-            }
-          }
-          // Si sólo coinciden la 2 y la 3
-          else if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 2 es la menos visitada
-            else {
-              proximaAccion=actFORWARD;
-            }
-          }
-          // Si sólo lo es la 2
-          else {
-            proximaAccion=actFORWARD;
-          }
+        // BOSQUE SIN ZAPATILLAS
+        // Si estamos rodeados de bosque nos movemos hacia delante
+        else if (RodeadoBosque(terreno,current_state,matriz) and terreno[2]=='B'){
+          proximaAccion=actFORWARD;
         }
-        // Si coinciden la 1 y la 3
-        else if (terreno[1]=='A'){
-          if (terreno[3]=='A'){
-            // Si la 3 es la menos visitada
-            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
-              proximaAccion=actTURN_SR;
-            }
-            // Si la 1 es la menos visitada
-            else {
-              proximaAccion=actTURN_SL;
-            }
-          }
-          // Si sólo lo es la 1
-          else {
-            proximaAccion=actTURN_SL;
-          }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (terreno[2]=='B' and contador_bosque<1){
+          proximaAccion=actTURN_BL;
+          contador_bosque++;
         }
-        // Si sólo lo es la 3
-        else if (terreno[3]=='A'){
-          proximaAccion=actTURN_SR;
-        }*/
+        else if (terreno[2]=='B' and contador_bosque>=1){
+          proximaAccion=actTURN_SL;
+          contador_bosque=0;
+        }
+        
+        // AGUA SIN BIKINI -- LO ESTOY PROBANDO
+        // Si estamos rodeados de agua nos movemos hacia delante
+        else if (RodeadoAgua(terreno,current_state,matriz)){
+          proximaAccion=actFORWARD;
+        }
+        // Si no lo estamos, giramos hasta que encontremos la casilla que no es agua
+        else if (contador_agua<1){
+          proximaAccion=actTURN_BL;
+          contador_agua++;
+        }
         else {
           proximaAccion=actTURN_SL;
+          contador_agua=0;
         }
       break;
     }
