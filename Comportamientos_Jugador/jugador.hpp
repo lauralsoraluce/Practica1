@@ -201,9 +201,6 @@ class ComportamientoJugador : public Comportamiento{
 
   Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const int &bateria, const state &st, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &matriz2){
 
-
-    
-
     /*if (terreno[2]=='M'){
       if (terreno[3]=='M'){
         if (terreno[1]=='M'){
@@ -252,16 +249,7 @@ class ComportamientoJugador : public Comportamiento{
       return proximaAccion;
     }*/
 
-    if (terreno[2]=='X' and bateria<4500){
-      proximaAccion=actFORWARD;
-    }
-    else if (terreno[1]=='X' and bateria <4500){
-      proximaAccion=actTURN_SL;
-    }
-    else if (terreno[3]=='X' and bateria<4500){
-      proximaAccion=actTURN_SR;
-    }
-    else if (!zapatillas and terreno[2]=='D'){
+    if (!zapatillas and terreno[2]=='D'){
       proximaAccion=actFORWARD;
     }
     else if (!zapatillas and terreno[1]=='D'){
@@ -280,7 +268,32 @@ class ComportamientoJugador : public Comportamiento{
       proximaAccion=actTURN_SR;
     }
 
-    if (terreno[2]!='P'){
+    else if (terreno[2]=='M'){
+      if (terreno[1]!='M'){
+        proximaAccion=actTURN_SL;
+        return proximaAccion;
+      }
+      else {
+        proximaAccion=actTURN_SR;
+        return proximaAccion;
+      }
+    }
+    else if (terreno[1]=='M' and terreno[3]=='M'){
+      if (terreno[2]!='P'){
+        proximaAccion=actFORWARD;
+        return proximaAccion;
+      }
+    }
+    else if (terreno[1]=='M'){
+      proximaAccion=actTURN_SL;
+      return proximaAccion;
+    }
+    else if (terreno[3]=='M'){
+      proximaAccion=actTURN_SR;
+      return proximaAccion;
+    }
+
+    else if (terreno[2]!='P'){
     switch (current_state.brujula){
       case norte:
         // SUELO PEDREGOSO
@@ -790,7 +803,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -856,6 +869,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case noreste:
@@ -1366,7 +1382,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -1435,6 +1451,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case este:
@@ -1945,7 +1964,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -2014,6 +2033,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case sureste:
@@ -2524,7 +2546,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -2593,6 +2615,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case sur:
@@ -3103,7 +3128,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -3172,6 +3197,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case suroeste:
@@ -3682,7 +3710,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -3751,6 +3779,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case oeste:
@@ -4261,7 +4292,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -4330,6 +4361,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
+        }*/
+        else {
+          proximaAccion=actTURN_SL;
         }
       break;
       case noroeste:
@@ -4840,7 +4874,7 @@ class ComportamientoJugador : public Comportamiento{
         }
         
         // AGUA SIN BIKINI
-        else if (terreno[2]=='A'){
+        /*else if (terreno[2]=='A'){
           if (terreno[1]=='A'){
             // Si las tres casillas coinciden
             if (terreno[3]=='A'){
@@ -4909,9 +4943,9 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (terreno[3]=='A'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
         else {
-          proximaAccion=actFORWARD;
+          proximaAccion=actTURN_SL;
         }
       break;
     }

@@ -128,13 +128,45 @@ Action ComportamientoJugador::think(Sensores sensores){
 
 	if (sensores.terreno[0]=='X' and sensores.bateria<4980){
 		last_action=actIDLE;
+		ultima=actual;
+		actual.fil=current_state.fil;
+		actual.col=current_state.col;
 		accion=last_action;
 	}
+	else if (sensores.terreno[2]=='X' and sensores.bateria<6000){
+    	last_action=actFORWARD;
+	  	ultima=actual;
+		actual.fil=current_state.fil;
+		actual.col=current_state.col;
+		accion=last_action;
+    }
+    else if (sensores.terreno[1]=='X' and sensores.bateria <6000){
+      	last_action=actTURN_SL;
+		ultima=actual;
+		actual.fil=current_state.fil;
+		actual.col=current_state.col;
+		accion=last_action;
+    }
+    else if (sensores.terreno[3]=='X' and sensores.bateria<6000){
+      	last_action=actTURN_SR;
+	  	ultima=actual;
+		actual.fil=current_state.fil;
+		actual.col=current_state.col;
+		accion=last_action;
+    }
 	else {
 		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, sensores.bateria, current_state, mapaResultado, mapaVisitas);
 		
 		if (ultima.fil==actual.fil and ultima.col==actual.col and last_action!=actFORWARD){
-			if (sensores.terreno[2]!='P') {
+			if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M') {
+				last_action=actFORWARD;
+			}
+			else {
+				last_action=actTURN_BL;
+			}
+		}
+		else if (mapaVisitas[current_state.fil][current_state.col]>5 and last_action!=actFORWARD){
+			if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M') {
 				last_action=actFORWARD;
 			}
 			else {
