@@ -82,9 +82,11 @@ Action ComportamientoJugador::think(Sensores sensores){
 			bikini=true;
 		else if (sensores.terreno[0]=='D')
 			zapatillas=true;
+		else if (sensores.terreno[0]=='G')
+			posicionamiento=true;
 	}
 
-	if (last_action == actFORWARD or last_action == actIDLE) { //Si he cambiado de casilla, apunto que he visitado la casilla actual. 
+	if (last_action == actFORWARD) { //Si he cambiado de casilla, apunto que he visitado la casilla actual. 
 		mapaVisitas[current_state.fil][current_state.col]++;
 	}
 
@@ -124,17 +126,28 @@ Action ComportamientoJugador::think(Sensores sensores){
 	/*last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, current_state, mapaResultado, mapaVisitas);
 	return last_action;*/
 
-	if ((last_action==actTURN_SL or last_action==actTURN_SR) and (sensores.terreno[1]=='K' or sensores.terreno[1]=='D')){
-		last_action=actFORWARD;
+	if (sensores.terreno[0]=='X' and sensores.bateria<4980){
+		last_action=actIDLE;
 		accion=last_action;
-		return last_action;
 	}
 	else {
 		last_action=GirarMenosVisitada(sensores.terreno, sensores.superficie, sensores.bateria, current_state, mapaResultado, mapaVisitas);
+		
+		if (ultima.fil==actual.fil and ultima.col==actual.col and last_action!=actFORWARD){
+			if (sensores.terreno[2]!='P') {
+				last_action=actFORWARD;
+			}
+			else {
+				last_action=actTURN_BL;
+			}
+		}
+		ultima=actual;
+		actual.fil=current_state.fil;
+		actual.col=current_state.col;
 		accion=last_action;
-
-		return last_action;
 	}
+
+	return last_action;
 	
 }
 

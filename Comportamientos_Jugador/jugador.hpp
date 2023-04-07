@@ -27,11 +27,17 @@ class ComportamientoJugador : public Comportamiento{
       current_state.fil = current_state.col = 99;
       current_state.brujula = norte;
 
+      ultima.fil=-2;
+      ultima.col=-2;
+      actual.fil=-1;
+      actual.col=-1;
       zapatillas=false;
       bikini=false;
+      posicionamiento=false;
       /*girar_derecha = false;
       giro_grande = false;*/
       bien_situado = false;
+      stuck=false;
 
       vector<unsigned int> aux;
       for (unsigned int i = 0; i < 100; i++)
@@ -64,11 +70,14 @@ class ComportamientoJugador : public Comportamiento{
   bool bien_situado;
   bool zapatillas; 
   bool bikini;
+  bool posicionamiento;
+  bool stuck;
+  casilla ultima;
+  casilla actual;
 
 
   // INTENTO DE ACTUALIZACIÓN DE MAPA CUANDO LLEGUEMOS A LA CASILLA G 
     vector< vector< unsigned int> > mapaVisitas;
-  casilla menosVisitada;
   Action proximaAccion;
 
   void PonerTerrenoEnMatriz(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
@@ -191,11 +200,11 @@ class ComportamientoJugador : public Comportamiento{
   }
 
   Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const int &bateria, const state &st, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &matriz2){
-    menosVisitada.fil=0;
-    menosVisitada.col=0;
-    bool picked=false;
 
-    if (terreno[2]=='M'){
+
+    
+
+    /*if (terreno[2]=='M'){
       if (terreno[3]=='M'){
         if (terreno[1]=='M'){
           proximaAccion=actTURN_BL;
@@ -236,91 +245,4685 @@ class ComportamientoJugador : public Comportamiento{
       else {
         proximaAccion=actTURN_BL;
       }
-    }
+    }*/
 
-    if (terreno[0]=='X' and bateria<5000){
+    /*if (terreno[0]=='X' and bateria<5000){
       proximaAccion=actIDLE;
       return proximaAccion;
+    }*/
+
+    if (terreno[2]=='X' and bateria<4500){
+      proximaAccion=actFORWARD;
     }
+    else if (terreno[1]=='X' and bateria <4500){
+      proximaAccion=actTURN_SL;
+    }
+    else if (terreno[3]=='X' and bateria<4500){
+      proximaAccion=actTURN_SR;
+    }
+    else if (!zapatillas and terreno[2]=='D'){
+      proximaAccion=actFORWARD;
+    }
+    else if (!zapatillas and terreno[1]=='D'){
+      proximaAccion=actTURN_SL;
+    }
+    else if (!zapatillas and terreno[3]=='D'){
+      proximaAccion=actTURN_SR;
+    }
+    else if (!bikini and terreno[2]=='K'){
+      proximaAccion=actFORWARD;
+    }
+    else if (!bikini and terreno[1]=='K'){
+      proximaAccion=actTURN_SL;
+    }
+    else if (!bikini and terreno[3]=='K'){
+      proximaAccion=actTURN_SR;
+    }
+
     if (terreno[2]!='P'){
-      if (terreno[2]=='X' and bateria<4500){
-        proximaAccion=actFORWARD;
-      }
-      else if (terreno[1]=='X' and bateria <4500){
-        proximaAccion=actTURN_SL;
-      }
-      else if (terreno[3]=='X' and bateria<4500){
-        proximaAccion=actTURN_SR;
-      }
-      else if (!zapatillas and terreno[2]=='D'){
-        proximaAccion=actFORWARD;
-      }
-      else if (!zapatillas and terreno[1]=='D'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (!zapatillas and terreno[3]=='D'){
-        proximaAccion=actTURN_SR;
-      }
-      else if (!bikini and terreno[2]=='K'){
-        proximaAccion=actFORWARD;
-      }
-      else if (!bikini and terreno[1]=='K'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (!bikini and terreno[3]=='K'){
-        proximaAccion=actTURN_SR;
-      }
-      else if (terreno[2]=='S'){
-        proximaAccion=actFORWARD;
-      }
-      else if (terreno[1]=='S'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (terreno[3]=='S'){
-        proximaAccion=actTURN_SR;
-      }
-      else if (terreno[2]=='T'){
-        proximaAccion=actFORWARD;
-      }
-      else if (terreno[1]=='T'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (terreno[3]=='T'){
-        proximaAccion=actTURN_SR;
-      }
-      else if (bikini and terreno[2]=='A'){
-        proximaAccion=actFORWARD;
-      }
-      else if (bikini and terreno[1]=='A'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (bikini and terreno[3]=='A'){
-        proximaAccion=actTURN_SR;
-      }
-      else if (terreno[2]=='B'){
-        proximaAccion=actFORWARD;
-      }
-      else if (terreno[1]=='B'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (terreno[3]=='B'){
-        proximaAccion=actTURN_SR;
-      }
-      else if (terreno[2]=='A'){
-        proximaAccion=actFORWARD;
-      }
-      else if (terreno[1]=='A'){
-        proximaAccion=actTURN_SL;
-      }
-      else if (terreno[3]=='A'){
-        proximaAccion=actTURN_SR;
-      }
-      else {
-        proximaAccion=actFORWARD;
-      }
+    switch (current_state.brujula){
+      case norte:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                  mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                  proximaAccion=actTURN_SR;
+                }
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else {
+                proximaAccion=actTURN_SR;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case noreste:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                  mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                  proximaAccion=actTURN_SR;
+                }
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case este:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil-1)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                  mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                  proximaAccion=actTURN_SR;
+                }
+                else{
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case sureste:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                  mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                  proximaAccion=actTURN_SR;
+                }
+                else{
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case sur:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                  mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                  proximaAccion=actTURN_SR;
+                }
+                else{
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)+1] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case suroeste:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                  mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                  proximaAccion=actTURN_SR;
+                }
+                else{
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)] and
+                mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]<mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case oeste:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil+1)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                  mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                  proximaAccion=actTURN_SR;
+                }
+                else{
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)+1][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+      break;
+      case noroeste:
+        // SUELO PEDREGOSO
+        if (terreno[2]=='S'){
+          if (terreno[1]=='S'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='S'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='S'){
+          if (terreno[3]=='S'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA BIKINI
+        if (!bikini and terreno[2]=='K'){
+          if (terreno[1]=='K'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='K'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!bikini and terreno[1]=='K'){
+          if (terreno[3]=='K'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!bikini and terreno[3]=='K'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA ZAPATILLAS
+        else if (!zapatillas and terreno[2]=='D'){
+          if (terreno[1]=='D'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='D'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (!zapatillas and terreno[1]=='D'){
+          if (terreno[3]=='D'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (!zapatillas and terreno[3]=='D'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // CASILLA POSICIONAMIENTO
+        else if (terreno[2]=='G' and !posicionamiento){
+          if (terreno[1]=='G'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='G'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='G' and !posicionamiento){
+          if (terreno[3]=='G'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='G' and !posicionamiento){
+          proximaAccion=actTURN_SR;
+        }
+
+        // SUELO ARENOSO
+        else if (terreno[2]=='T'){
+          if (terreno[1]=='T'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='T'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='T'){
+          if (terreno[3]=='T'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+
+        // AGUA CON BIKINI
+        else if (bikini){
+          if (terreno[2]=='A'){
+            if (terreno[1]=='A'){
+              // Si las tres casillas coinciden
+              if (terreno[3]=='A'){
+                // Si la 2 es la menos visitada
+                if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                  mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                  proximaAccion=actFORWARD;
+                }
+                // Si la 1 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 3 es la menos visitada
+                else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                  proximaAccion=actTURN_SR;
+                }
+                else{
+                  proximaAccion=actFORWARD;
+                }
+              }
+              // Si sólo coinciden la 1 y la 2
+              else {
+                // Si la 1 es la menos visitada
+                if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                  proximaAccion=actTURN_SL;
+                }
+                // Si la 2 es la menos visitada
+                else {
+                  proximaAccion=actFORWARD;
+                }
+              }
+            }
+            // Si sólo coinciden la 2 y la 3
+            else if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo lo es la 2
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si coinciden la 1 y la 3
+          else if (terreno[1]=='A'){
+            if (terreno[3]=='A'){
+              // Si la 3 es la menos visitada
+              if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              // Si la 1 es la menos visitada
+              else {
+                proximaAccion=actTURN_SL;
+              }
+            }
+            // Si sólo lo es la 1
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 3
+          else if (terreno[3]=='A'){
+            proximaAccion=actTURN_SR;
+          }
+        }
+
+        // BOSQUE (CON O SIN ZAPATILLAS)
+        else if (terreno[2]=='B'){
+          if (terreno[1]=='B'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='B'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='B'){
+          if (terreno[3]=='B'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        
+        // AGUA SIN BIKINI
+        else if (terreno[2]=='A'){
+          if (terreno[1]=='A'){
+            // Si las tres casillas coinciden
+            if (terreno[3]=='A'){
+              // Si la 2 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)][(current_state.col)-1] and
+                mapaVisitas[(current_state.fil)-1][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actFORWARD;
+              }
+              // Si la 1 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]<mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 3 es la menos visitada
+              else if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+                proximaAccion=actTURN_SR;
+              }
+              else{
+                proximaAccion=actFORWARD;
+              }
+            }
+            // Si sólo coinciden la 1 y la 2
+            else {
+              // Si la 1 es la menos visitada
+              if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
+                proximaAccion=actTURN_SL;
+              }
+              // Si la 2 es la menos visitada
+              else {
+                proximaAccion=actFORWARD;
+              }
+            }
+          }
+          // Si sólo coinciden la 2 y la 3
+          else if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 2 es la menos visitada
+            else {
+              proximaAccion=actFORWARD;
+            }
+          }
+          // Si sólo lo es la 2
+          else {
+            proximaAccion=actFORWARD;
+          }
+        }
+        // Si coinciden la 1 y la 3
+        else if (terreno[1]=='A'){
+          if (terreno[3]=='A'){
+            // Si la 3 es la menos visitada
+            if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
+              proximaAccion=actTURN_SR;
+            }
+            // Si la 1 es la menos visitada
+            else {
+              proximaAccion=actTURN_SL;
+            }
+          }
+          // Si sólo lo es la 1
+          else {
+            proximaAccion=actTURN_SL;
+          }
+        }
+        // Si sólo lo es la 3
+        else if (terreno[3]=='A'){
+          proximaAccion=actTURN_SR;
+        }
+        else {
+          proximaAccion=actFORWARD;
+        }
+      break;
+    }
+    }
+    else if (terreno[1]!='P'){
+      proximaAccion=actTURN_SL;
+    }
+    else if (terreno[3]!='P'){
+      proximaAccion=actTURN_SR;
     }
     else {
-      proximaAccion=actTURN_SR;
+      proximaAccion=actTURN_BL;
     }
 
     return proximaAccion;
