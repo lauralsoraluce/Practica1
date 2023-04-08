@@ -64,9 +64,15 @@ Action ComportamientoJugador::think(Sensores sensores){
 			current_state.brujula = static_cast<Orientacion>(a);
 			break;
 		case actTURN_BR:
+		a = current_state.brujula;
 		a = (a+3) % 8;
 			current_state.brujula = static_cast<Orientacion>(a);
 			break;
+	}
+
+	if (primeraVez){
+		PintarPrecipiciosBordes(current_state, mapaResultado);
+		primeraVez=false;
 	}
 
 	// 4

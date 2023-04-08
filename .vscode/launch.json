@@ -8,7 +8,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/practica1",
             "cwd": "${workspaceRoot}",
-            "args": ["mapas/mapa100.map", "1", "0", "84", "32", "3"],
+            "args": ["mapas/mapa75.map", "1", "0", "31", "18", "7"],
             // "preLaunchTask": "build",
             // set environment variables
             // "environment": [

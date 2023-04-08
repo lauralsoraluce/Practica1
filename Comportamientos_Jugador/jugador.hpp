@@ -27,6 +27,7 @@ class ComportamientoJugador : public Comportamiento{
       current_state.fil = current_state.col = 99;
       current_state.brujula = norte;
 
+      primeraVez=true;
       ultima.fil=-2;
       ultima.col=-2;
       actual.fil=-1;
@@ -70,6 +71,7 @@ class ComportamientoJugador : public Comportamiento{
   bool posicionamiento;
   casilla ultima;
   casilla actual;
+  bool primeraVez;
   int contador_agua, contador_bosque;
 
 
@@ -215,6 +217,29 @@ class ComportamientoJugador : public Comportamiento{
 	  }
   }
 
+  void PintarPrecipiciosBordes(const state &st, vector<vector<unsigned char>> &matriz){
+    for (int i=0; i<3; i++){
+      for (int j=0; j<matriz.size(); j++){
+        matriz[i][j]='P';
+      }
+    }
+    for (int i=0; i<matriz.size(); i++) {
+      for (int j=0; j<3; j++){
+        matriz[i][j]='P';
+      }
+    }
+    for (int i=matriz.size()-3; i<matriz.size(); i++){
+      for (int j=0; j<matriz.size(); j++){
+        matriz[i][j]='P';
+      }
+    }
+    for (int i=0; i<matriz.size(); i++){
+      for (int j=matriz.size()-3; j<matriz.size(); j++){
+        matriz[i][j]='P';
+      }
+    }
+  }
+
   Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &current_state, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &mapaVisitas){
 
     if (!zapatillas and terreno[2]=='D'){
@@ -237,6 +262,16 @@ class ComportamientoJugador : public Comportamiento{
     }
 
     else if (terreno[2]=='M'){
+      if (terreno[1]!='M' and terreno[3]!='M'){
+        if (terreno[5]=='M'){
+          proximaAccion=actTURN_SR;
+          return proximaAccion;
+        }
+        else if (terreno[7]=='M'){
+          proximaAccion=actTURN_SL;
+          return proximaAccion;
+        }
+      }
       if (terreno[1]!='M'){
         proximaAccion=actTURN_SL;
         return proximaAccion;
@@ -251,12 +286,24 @@ class ComportamientoJugador : public Comportamiento{
         proximaAccion=actFORWARD;
         return proximaAccion;
       }
+      else {
+        proximaAccion=actTURN_BL;
+        return proximaAccion;
+      }
     }
-    else if (terreno[1]=='M'){
+    else if (terreno[1]=='M' and terreno[2]!='P'){
+      if (terreno[7]=='M'){
+        proximaAccion=actFORWARD;
+        return proximaAccion;
+      }
       proximaAccion=actTURN_SL;
       return proximaAccion;
     }
-    else if (terreno[3]=='M'){
+    else if (terreno[3]=='M' and terreno[2]!='P'){
+      if (terreno[5]=='M'){
+        proximaAccion=actFORWARD;
+        return proximaAccion;
+      }
       proximaAccion=actTURN_SR;
       return proximaAccion;
     }
@@ -699,7 +746,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -749,7 +796,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)-1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
@@ -766,7 +813,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
 
@@ -1236,7 +1283,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -1286,7 +1333,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)-1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)+1]){
@@ -1303,7 +1350,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
@@ -1773,7 +1820,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -1823,7 +1870,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)-1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)+1]){
@@ -1840,7 +1887,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
@@ -2310,7 +2357,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -2360,7 +2407,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)]){
@@ -2377,7 +2424,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
@@ -2463,7 +2510,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='S'){
+        else if (terreno[1]=='S' and zapatillas){
           if (terreno[3]=='S'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
@@ -2480,7 +2527,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='S'){
+        else if (terreno[3]=='S' and zapatillas){
           proximaAccion=actTURN_SR;
         }
 
@@ -2847,7 +2894,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -2897,7 +2944,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)+1][(current_state.col)+1]>mapaVisitas[(current_state.fil)+1][(current_state.col)-1]){
@@ -2914,7 +2961,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
@@ -3384,7 +3431,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -3434,7 +3481,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)+1][(current_state.col)]>mapaVisitas[(current_state.fil)][(current_state.col)-1]){
@@ -3451,7 +3498,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
@@ -3921,7 +3968,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -3971,7 +4018,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)+1][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)-1]){
@@ -3988,7 +4035,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
@@ -4458,7 +4505,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // BOSQUE CON ZAPATILLAS
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and zapatillas){
           if (terreno[1]=='B'){
             // Si las tres casillas coinciden
             if (terreno[3]=='B'){
@@ -4508,7 +4555,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si coinciden la 1 y la 3
-        else if (terreno[1]=='B'){
+        else if (terreno[1]=='B' and zapatillas){
           if (terreno[3]=='B'){
             // Si la 3 es la menos visitada
             if (mapaVisitas[(current_state.fil)][(current_state.col)-1]>mapaVisitas[(current_state.fil)-1][(current_state.col)]){
@@ -4525,7 +4572,7 @@ class ComportamientoJugador : public Comportamiento{
           }
         }
         // Si sólo lo es la 3
-        else if (terreno[3]=='B'){
+        else if (terreno[3]=='B' and zapatillas){
           proximaAccion=actTURN_SR;
         }
         
