@@ -26,6 +26,8 @@ class ComportamientoJugador : public Comportamiento{
       //Orientacion = norte;
       current_state.fil = current_state.col = 99;
       current_state.brujula = norte;
+      state_ciego.fil = state_ciego.col = 99;
+      state_ciego.brujula = norte;
 
       primeraVez=true;
       ultima.fil=-2;
@@ -38,6 +40,8 @@ class ComportamientoJugador : public Comportamiento{
       bien_situado = false;
       contador_agua=0;
       contador_bosque=0;
+      contador_pos=0;
+      nivel_cero=true;
 
       vector<unsigned int> aux;
       for (unsigned int i = 0; i < 100; i++)
@@ -46,6 +50,15 @@ class ComportamientoJugador : public Comportamiento{
           aux.push_back(0);
         }
         mapaVisitas.push_back(aux);
+      }
+
+      vector<unsigned char> aux2;
+      for (unsigned int i = 0; i < 199; i++)
+      {
+        for (unsigned int j=0; j<199; j++){
+          aux2.push_back('?');
+        }
+        mapaCiego.push_back(aux2);
       }
     }
 
@@ -72,14 +85,32 @@ class ComportamientoJugador : public Comportamiento{
   casilla ultima;
   casilla actual;
   bool primeraVez;
-  int contador_agua, contador_bosque;
+  int contador_agua, contador_bosque, contador_pos;
+
+  //PARA EL NIVEL 1-3
+  state state_ciego;
+  bool nivel_cero;
 
 
   // INTENTO DE ACTUALIZACIÓN DE MAPA CUANDO LLEGUEMOS A LA CASILLA G 
     vector< vector< unsigned int> > mapaVisitas;
+    vector< vector< unsigned char> > mapaCiego;
   Action proximaAccion;
 
-// DEVUELVE TRUE SI ESTAMOS RODEADOS DE AGUA O SI SE DESCONOCE ALGUNA PARTE DEL TERRENO ALREDEDOR NUESTRA
+  // DEVUELVE TRUE SI HAY ALGUNA CASILLA DE POSICIONAMIENTO A LA VISTA
+  bool RodeadoPosicionamiento(const vector<unsigned char> &terreno){
+    bool hay_pos = false;
+
+    for (int i=0; i<16; i++){
+      if (terreno[i]=='G'){
+        hay_pos=true;
+      }
+    }
+
+    return hay_pos;
+  }
+
+  // DEVUELVE TRUE SI ESTAMOS RODEADOS DE AGUA O SI SE DESCONOCE ALGUNA PARTE DEL TERRENO ALREDEDOR NUESTRA
   bool RodeadoAgua(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
 
     for (int i=-1; i<2; i++){
@@ -109,7 +140,7 @@ class ComportamientoJugador : public Comportamiento{
   void PonerTerrenoEnMatriz(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
     int count=0;
 
-    switch(current_state.brujula){ 
+    switch(st.brujula){ 
       case norte:
           for (int i=0; i<4; i++){
             for (int j=0; j<1+2*i; j++){
@@ -215,6 +246,15 @@ class ComportamientoJugador : public Comportamiento{
         matriz[st.fil+3][st.col]=terreno[15];
         break;
 	  }
+  }
+
+  void PintarCasillasVistas(vector<vector<unsigned char>> &matriz, vector<vector<unsigned char>> &matriz2, const state &current_state){
+    
+    for (int i=0; i<current_state.fil; i++){
+      for (int j=0; j<current_state.col; j++){
+        matriz[(current_state.fil)-i][(current_state.col)-j]=matriz2[(state_ciego.fil)-i][(state_ciego.fil)-i];
+      }
+    }
   }
 
   void PintarPrecipiciosBordes(const state &st, vector<vector<unsigned char>> &matriz){
@@ -4618,6 +4658,106 @@ class ComportamientoJugador : public Comportamiento{
       proximaAccion=actTURN_BL;
     }
 
+    return proximaAccion;
+  }
+
+  Action GirarCiego(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &state_ciego, vector<vector<unsigned char>> &matriz, vector<vector<unsigned char>> &mapaCiego){
+    
+    // Si hay casilla de posicionamiento a la vista, vamos hacia ella
+    if (RodeadoPosicionamiento(terreno)){
+      if (terreno[2]!='M' and terreno[2]!='P' and (terreno[2]=='G' or terreno[6]=='G' or terreno[12]=='G' or terreno[5]=='G'
+        or terreno[7]=='G' or terreno[10]=='G' or terreno[11]=='G' or terreno[13]=='G' or terreno[14]=='G')){
+        proximaAccion=actFORWARD;
+      }
+      else if (terreno[1]=='G' or terreno[4]=='G' or terreno[9]=='G'){
+        proximaAccion=actTURN_SL;
+      }
+      else if (terreno[3]=='G' or terreno[8]=='G' or terreno[15]=='G'){
+        proximaAccion=actTURN_SR;
+      }
+    }
+    // Si no hay casilla de posicionamiento a la vista nos movemos hacia lo que más nos interese
+    else{
+      if (contador_pos<2 or terreno[2]=='P' or terreno[2]=='M'){
+        proximaAccion=actTURN_BR;
+        contador_pos++;
+      }
+      else if (contador_pos==2){
+        proximaAccion=actTURN_SR;
+        contador_pos++;
+      }
+      else {
+        if (terreno[2]=='K' and !bikini){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='K' and !bikini){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='K' and !bikini){
+          proximaAccion=actTURN_SR;
+        }
+        else if (terreno[2]=='D' and !zapatillas){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='D' and !zapatillas){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='D' and !zapatillas){
+          proximaAccion=actTURN_SR;
+        }
+        else if (terreno[2]=='S'){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='S'){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='S'){
+          proximaAccion=actTURN_SR;
+        }
+        else if (terreno[2]=='T'){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='T'){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='T'){
+          proximaAccion=actTURN_SR;
+        }
+        else if (terreno[2]=='A' and bikini){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='A' and bikini){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='A' and bikini){
+          proximaAccion=actTURN_SR;
+        }
+        else if (terreno[2]=='B'){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='B'){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='B'){
+          proximaAccion=actTURN_SR;
+        }
+        else if (terreno[2]=='A' and !bikini){
+          proximaAccion=actFORWARD;
+        }
+        else if (terreno[1]=='A' and !bikini){
+          proximaAccion=actTURN_SL;
+        }
+        else if (terreno[3]=='A' and !bikini){
+          proximaAccion=actTURN_SR;
+        }
+
+        if (proximaAccion==actFORWARD){
+          contador_pos=0;
+        }
+      }
+
+    }
+        
     return proximaAccion;
   }
 };
