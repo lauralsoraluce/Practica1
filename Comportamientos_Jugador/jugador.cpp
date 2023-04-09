@@ -243,6 +243,28 @@ Action ComportamientoJugador::think(Sensores sensores){
 		}
 	}
 
+	if (sensores.reset){
+		if (!bien_situado){
+			PintarCasillasVistas(mapaResultado, mapaCiego, state_ciego, sensores);
+		}
+		bien_situado=false;
+		nivel_cero=false;
+		bikini=false;
+		zapatillas=false;
+		posicionamiento=false;
+
+		vector<unsigned char> aux2;
+		for (unsigned int i = 0; i < 199; i++){
+        	for (unsigned int j=0; j<199; j++){
+          		aux2.push_back('?');
+        	}
+        	mapaCiego.push_back(aux2);
+       	}
+		
+      	state_ciego.fil = state_ciego.col = 99;
+      	state_ciego.brujula = norte;	
+	}
+
 	// Si no estamos en el nivel 0 y encontramos una casilla de posicionamiento, copiamos las casillas que hemos visto hasta ahora
 	if (sensores.terreno[0]=='G' and !nivel_cero){
 		PintarCasillasVistas(mapaResultado, mapaCiego, state_ciego, sensores);

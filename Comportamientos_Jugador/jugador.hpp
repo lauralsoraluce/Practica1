@@ -109,6 +109,19 @@ class ComportamientoJugador : public Comportamiento{
   }
 
   // DEVUELVE TRUE SI ESTAMOS RODEADOS DE AGUA O SI SE DESCONOCE ALGUNA PARTE DEL TERRENO ALREDEDOR NUESTRA
+  bool RodeadoLobo(const vector<unsigned char> &superf){
+    bool hay_lobo = false;
+
+    for (int i=0; i<16; i++){
+      if (superf[i]=='l'){
+        hay_lobo=true;
+      }
+    }
+
+    return hay_lobo;
+  }
+
+  // DEVUELVE TRUE SI ESTAMOS RODEADOS DE AGUA O SI SE DESCONOCE ALGUNA PARTE DEL TERRENO ALREDEDOR NUESTRA
   bool RodeadoAgua(const vector<unsigned char> &terreno, const state &st, vector<vector<unsigned char>> &matriz){
 
     for (int i=-1; i<2; i++){
@@ -251,7 +264,9 @@ class ComportamientoJugador : public Comportamiento{
     
     for (int i=0; i<matriz.size(); i++){
       for (int j=0; j<matriz.size(); j++){
-        matriz[i][j]=matriz2[(state_ciego.fil)-(sensor.posF)+i][(state_ciego.col)-(sensor.posC)+j];
+        if (matriz[i][j]=='?'){
+          matriz[i][j]=matriz2[(state_ciego.fil)-(sensor.posF)+i][(state_ciego.col)-(sensor.posC)+j];
+        }
       }
     }
   }
@@ -283,7 +298,29 @@ class ComportamientoJugador : public Comportamiento{
   // PARA SABER HACIA DÓNDE MOVERNOS CUANDO NO ESTAMOS BUSCANDO CASILLA DE POSICIONAMIENTO
   Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &current_state, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &mapaVisitas){
     
-    if (!zapatillas and terreno[2]=='D' and superficie[2]=='_'){
+    if (RodeadoLobo(superficie)){
+      if (superficie[1]=='l' or superficie[4]=='l' or superficie[9]=='l' or superficie[5]=='l' or superficie[10]=='l'){
+        if (terreno[2]!='A' or bikini){
+          proximaAccion=actTURN_SR;
+        }
+        else {
+          proximaAccion=actTURN_BR;
+        }
+      }
+      else if (superficie[3]=='l' or superficie[8]=='l' or superficie[15]=='l' or superficie[7]=='l' or superficie[14]=='l'){
+        if (terreno[2]!='A' or bikini){
+          proximaAccion=actTURN_SL;
+        }
+        else {
+          proximaAccion=actTURN_SR;
+        }
+      }
+      else if (superficie[2]=='l' or superficie[6]=='l' or superficie[12]=='l'){
+        proximaAccion=actTURN_BL;
+      }
+    }
+
+    else if (!zapatillas and terreno[2]=='D' and superficie[2]=='_'){
       proximaAccion=actFORWARD;
     }
     else if (!zapatillas and terreno[1]=='D'){
@@ -4665,8 +4702,31 @@ class ComportamientoJugador : public Comportamiento{
   // PARA SABER HACIA DÓNDE MOVERNOS SI ESTAMOS BUSCANDO CASILLA DE POSICIONAMIENTO
   Action GirarCiego(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &state_ciego, vector<vector<unsigned char>> &matriz, vector<vector<unsigned char>> &mapaCiego){
     
+    // Si tenemos un lobo a la vista, nos piramos
+    if (RodeadoLobo(superficie)){
+      if (superficie[1]=='l' or superficie[4]=='l' or superficie[9]=='l' or superficie[5]=='l' or superficie[10]=='l'){
+        if (terreno[2]!='A' or bikini){
+          proximaAccion=actTURN_SR;
+        }
+        else {
+          proximaAccion=actTURN_BR;
+        }
+      }
+      else if (superficie[3]=='l' or superficie[8]=='l' or superficie[15]=='l' or superficie[7]=='l' or superficie[14]=='l'){
+        if (terreno[2]!='A' or bikini){
+          proximaAccion=actTURN_SL;
+        }
+        else {
+          proximaAccion=actTURN_SR;
+        }
+      }
+      else if (superficie[2]=='l' or superficie[6]=='l' or superficie[12]=='l'){
+        proximaAccion=actTURN_BL;
+      }
+    }
+
     // Si hay casilla de posicionamiento a la vista, vamos hacia ella
-    if (RodeadoPosicionamiento(terreno)){
+    else if (RodeadoPosicionamiento(terreno)){
       if (terreno[2]!='M' and terreno[2]!='P' and (terreno[2]=='G' or terreno[6]=='G' or terreno[12]=='G' or terreno[5]=='G'
         or terreno[7]=='G' or terreno[10]=='G' or terreno[11]=='G' or terreno[13]=='G' or terreno[14]=='G') and superficie[2]=='_'){
         proximaAccion=actFORWARD;
@@ -4680,16 +4740,17 @@ class ComportamientoJugador : public Comportamiento{
     }
     // Si no hay casilla de posicionamiento a la vista nos movemos hacia lo que más nos interese
     else{
-      if (contador_pos<2 or terreno[2]=='P' or terreno[2]=='M'){
-        proximaAccion=actTURN_BR;
-        contador_pos++;
-      }
-      else if (contador_pos==2){
+      if (terreno[2]=='P' or terreno[2]=='M'){
         proximaAccion=actTURN_SR;
         contador_pos++;
       }
-      else {
-        if (terreno[2]=='K' and !bikini and superficie[2]=='_'){
+      /*else if (contador_pos==2){
+        proximaAccion=actTURN_SR;
+        contador_pos++;
+      }*/
+      //else {
+        if (((terreno[2]=='K' and !bikini) or (terreno[2]=='D' and !zapatillas) or (terreno[2]=='S') or terreno[2]=='T' or (terreno[2]=='A' and bikini)
+          or (terreno[2]=='B' and zapatillas)) and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='K' and !bikini){
@@ -4698,36 +4759,36 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='K' and !bikini){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='D' and !zapatillas and superficie[2]=='_'){
+        /*else if (terreno[2]=='D' and !zapatillas and superficie[2]=='_'){
           proximaAccion=actFORWARD;
-        }
+        }*/
         else if (terreno[1]=='D' and !zapatillas){
           proximaAccion=actTURN_SL;
         }
         else if (terreno[3]=='D' and !zapatillas){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='S' and superficie[2]=='_'){
+        /*else if (terreno[2]=='S' and superficie[2]=='_'){
           proximaAccion=actFORWARD;
-        }
+        }*/
         else if (terreno[1]=='S'){
           proximaAccion=actTURN_SL;
         }
         else if (terreno[3]=='S'){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='T' and superficie[2]=='_'){
+        /*else if (terreno[2]=='T' and superficie[2]=='_'){
           proximaAccion=actFORWARD;
-        }
+        }*/
         else if (terreno[1]=='T'){
           proximaAccion=actTURN_SL;
         }
         else if (terreno[3]=='T'){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='A' and bikini and superficie[2]=='_'){
+        /*else if (terreno[2]=='A' and bikini and superficie[2]=='_'){
           proximaAccion=actFORWARD;
-        }
+        }*/
         else if (terreno[1]=='A' and bikini){
           proximaAccion=actTURN_SL;
         }
@@ -4756,7 +4817,7 @@ class ComportamientoJugador : public Comportamiento{
         if (proximaAccion==actFORWARD){
           contador_pos=0;
         }
-      }
+      //}
 
     }
         
