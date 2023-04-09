@@ -8,6 +8,17 @@ Action ComportamientoJugador::think(Sensores sensores){
 
 	Action accion = actIDLE;
 
+	cout << "Posicion: fila ciega " << state_ciego.fil << " columna ciega " << state_ciego.col << " ";
+	switch(state_ciego.brujula){
+		case norte: cout << "Norte" << endl; break;
+		case noreste: cout << "Noreste" << endl; break;
+		case este: cout << "Este" << endl; break;
+		case sureste: cout << "Sureste" << endl; break;
+		case sur: cout << "Sur " << endl; break;
+		case suroeste: cout << "Suroeste" << endl; break;
+		case oeste: cout << "Oeste" << endl; break;
+		case noroeste: cout << "Noroeste" << endl; break;
+	}
 	cout << "Posicion: fila " << sensores.posF << " columna " << sensores.posC << " ";
 	switch(sensores.sentido){
 		case 0: cout << "Norte" << endl; break;
@@ -34,7 +45,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 	cout << "Vida: " << sensores.vida << endl;
 	cout << endl;
 
-	int a, b; //CAMBIOS
+	int a;
 	switch(last_action){
 		case actFORWARD: //Si me muevo recto
 			switch(current_state.brujula){ 
@@ -47,68 +58,207 @@ Action ComportamientoJugador::think(Sensores sensores){
 				case oeste: current_state.col--; break;
 				case noroeste: current_state.fil--; current_state.col--; break;
 			}
-			switch(state_ciego.brujula){
-				case norte: state_ciego.fil--; break; //Si estaba mirando al norte
-				case noreste: state_ciego.fil--; state_ciego.col++; break;
-				case este: state_ciego.col++; break;
-				case sureste: state_ciego.fil++; state_ciego.col++; break;
-				case sur: state_ciego.fil++; break;
-				case suroeste: state_ciego.fil++; state_ciego.col--; break;
-				case oeste: state_ciego.col--; break;
-				case noroeste: state_ciego.fil--; state_ciego.col--; break;
-			}
 			break;
 		case actTURN_SL:
 			a = current_state.brujula;
-			b = state_ciego.brujula;
 			a = (a+7) % 8; // Equivalente a (a-1)%8 -> giro 45 left
-			b = (b+7) % 8;
 			current_state.brujula = static_cast<Orientacion>(a);
-			state_ciego.brujula = static_cast<Orientacion>(b);
 			break;
 		case actTURN_SR:
 		a = current_state.brujula;
-			b=state_ciego.brujula;
 			a = (a+1) % 8;
-			b= (b+1) % 8;
 			current_state.brujula = static_cast<Orientacion>(a);
-			state_ciego.brujula = static_cast<Orientacion>(b);
 			break;
 		case actTURN_BL:
 		a = current_state.brujula;
-			b = state_ciego.brujula;
 			a = (a+5) % 8;
-			b = (b+5) % 8;
 			current_state.brujula = static_cast<Orientacion>(a);
-			state_ciego.brujula = static_cast<Orientacion>(b);
 			break;
 		case actTURN_BR:
 		a = current_state.brujula;
-			b = state_ciego.brujula;
 		a = (a+3) % 8;
-			b = (b+3) % 8;
 			current_state.brujula = static_cast<Orientacion>(a);
-			state_ciego.brujula = static_cast<Orientacion>(b);
 			break;
 	}
 
-	if (primeraVez){
-		PintarPrecipiciosBordes(current_state, mapaResultado);
-		// Me sitúo en mi propia brújula y fila y columna por si estoy en los niveles 1-3
-		/*state_ciego.brujula=norte;
-		state_ciego.fil=99;
-		state_ciego.col=99;*/
-		primeraVez=false;
+	// Si no estamos en el nivel 0 y aún no estamos bien situados, actualizamos el estado de nuestra propia brújula
+	if (!bien_situado){
+		switch(state_ciego.brujula){
+			case norte:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.fil--;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=suroeste;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=sureste;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=noroeste;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=noreste;
+					break;
+				}
+			break;
+			case noreste:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.fil--;
+						state_ciego.col++;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=oeste;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=sur;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=norte;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=este;
+					break;
+				}
+			break;
+			case este:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.col++;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=noroeste;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=suroeste;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=noreste;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=sureste;
+					break;
+				}
+			break;
+			case sureste:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.fil++;
+						state_ciego.col++;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=norte;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=oeste;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=este;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=sur;
+					break;
+				}
+			break;
+			case sur:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.fil++;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=noreste;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=noroeste;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=sureste;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=suroeste;
+					break;
+				}
+			break;
+			case suroeste:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.fil++;
+						state_ciego.col--;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=este;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=norte;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=sur;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=oeste;
+					break;
+				}
+			break;
+			case oeste:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.col--;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=sureste;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=noreste;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=suroeste;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=noroeste;
+					break;
+				}
+			break;
+			case noroeste:
+				switch(last_action){
+					case actFORWARD:
+						state_ciego.fil--;
+						state_ciego.col--;
+					break;
+					case actTURN_BL:
+						state_ciego.brujula=sur;
+					break;
+					case actTURN_BR:
+						state_ciego.brujula=este;
+					break;
+					case actTURN_SL:
+						state_ciego.brujula=oeste;
+					break;
+					case actTURN_SR:
+						state_ciego.brujula=norte;
+					break;
+				}
+			break;
+		}
 	}
 
-	// PARA NIVEL 1-3
+	// Si no estamos en el nivel 0 y encontramos una casilla de posicionamiento, copiamos las casillas que hemos visto hasta ahora
+	if (sensores.terreno[0]=='G' and !nivel_cero){
+		PintarCasillasVistas(mapaResultado, mapaCiego, state_ciego, sensores);
+		PintarPrecipiciosBordes(current_state, mapaResultado);
+		nivel_cero=true;
+	}
+
 	if(sensores.posF != -1 and !bien_situado){
 		current_state.fil = sensores.posF;
 		current_state.col = sensores.posC;
 		current_state.brujula = sensores.sentido;
 		bien_situado = true;
+		PintarPrecipiciosBordes(current_state, mapaResultado);
 	}
 
+	// Actualizamos los datos de los objetos que tenemos 
 	if (last_action==actFORWARD){
 		if (sensores.terreno[0]=='K')
 			bikini=true;
@@ -117,13 +267,8 @@ Action ComportamientoJugador::think(Sensores sensores){
 		else if (sensores.terreno[0]=='G')
 			posicionamiento=true;
 	}
-
-	// Si estamos en un nivel que no es el cero y estamos bien situados (hemos encontrado la casilla de posicionamiento)
-	/*if (sensores.terreno[0]=='G'){
-		PintarCasillasVistas(mapaResultado, mapaCiego, current_state);
-	}*/
 	
-	// Si estoy en el NIVEL 0
+	// Si estoy en el NIVEL 0 (o en los demás pero bien situado)
 	if (bien_situado){
 		if (last_action == actFORWARD) { //Si he cambiado de casilla, apunto que he visitado la casilla actual. 
 			mapaVisitas[current_state.fil][current_state.col]++;
@@ -139,7 +284,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 			actual.col=current_state.col;
 			accion=last_action;
 		}
-		else if (sensores.terreno[2]=='X' and sensores.bateria<4500){
+		else if (sensores.terreno[2]=='X' and sensores.bateria<4500 and sensores.superficie[2]=='_'){
 			last_action=actFORWARD;
 			ultima=actual;
 			actual.fil=current_state.fil;
@@ -166,7 +311,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 			
 			// PARA EVITAR QUE SE QUEDE ATASCADO GIRANDO EN UNA CASILLA
 			if (ultima.fil==actual.fil and ultima.col==actual.col and last_action!=actFORWARD){
-				if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M') {
+				if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M' and sensores.superficie[2]=='_') {
 					last_action=actFORWARD;
 				}
 				else {
@@ -175,7 +320,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 			}
 			// PARA EVITAR QUE ENTRE EN UN CICLO DE VARIAS CASILLAS
 			else if (mapaVisitas[current_state.fil][current_state.col]>5 and last_action!=actFORWARD){
-				if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M') {
+				if (sensores.terreno[2]!='P' and sensores.terreno[2]!='M' and sensores.superficie[2]=='_') {
 					last_action=actFORWARD;
 				}
 				else {
@@ -188,11 +333,16 @@ Action ComportamientoJugador::think(Sensores sensores){
 			accion=last_action;
 		}
 	}
-	// Si estoy en el NIVEL 1-3
+	// Si estoy en el NIVEL 1-3 y no estoy bien situado
 	else{
+		// Sé que no estoy en el nivel 0
 		nivel_cero=false;
+
+		// Pinto el terreno que veo en mi matriz ciega
 		PonerTerrenoEnMatriz(sensores.terreno, state_ciego, mapaCiego);
+		
 		last_action=GirarCiego(sensores.terreno, sensores.superficie, state_ciego, mapaResultado, mapaCiego);
+
 	}
 
 	return last_action;

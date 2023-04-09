@@ -29,7 +29,6 @@ class ComportamientoJugador : public Comportamiento{
       state_ciego.fil = state_ciego.col = 99;
       state_ciego.brujula = norte;
 
-      primeraVez=true;
       ultima.fil=-2;
       ultima.col=-2;
       actual.fil=-1;
@@ -84,7 +83,6 @@ class ComportamientoJugador : public Comportamiento{
   bool posicionamiento;
   casilla ultima;
   casilla actual;
-  bool primeraVez;
   int contador_agua, contador_bosque, contador_pos;
 
   //PARA EL NIVEL 1-3
@@ -248,15 +246,17 @@ class ComportamientoJugador : public Comportamiento{
 	  }
   }
 
-  void PintarCasillasVistas(vector<vector<unsigned char>> &matriz, vector<vector<unsigned char>> &matriz2, const state &current_state){
+  // PARA PONER LAS CASILLAS QUE HEMOS VISTO MIENTRAS TENÍAMOS LOS SENSORES APAGADOS
+  void PintarCasillasVistas(vector<vector<unsigned char>> &matriz, vector<vector<unsigned char>> &matriz2, const state &state_ciego, const Sensores &sensor){
     
-    for (int i=0; i<current_state.fil; i++){
-      for (int j=0; j<current_state.col; j++){
-        matriz[(current_state.fil)-i][(current_state.col)-j]=matriz2[(state_ciego.fil)-i][(state_ciego.fil)-i];
+    for (int i=0; i<matriz.size(); i++){
+      for (int j=0; j<matriz.size(); j++){
+        matriz[i][j]=matriz2[(state_ciego.fil)-(sensor.posF)+i][(state_ciego.col)-(sensor.posC)+j];
       }
     }
   }
 
+  // PARA PINTAR LOS PRECIPICIOS DE LOS BORDES DESDE EL PRINCIPIO
   void PintarPrecipiciosBordes(const state &st, vector<vector<unsigned char>> &matriz){
     for (int i=0; i<3; i++){
       for (int j=0; j<matriz.size(); j++){
@@ -280,9 +280,10 @@ class ComportamientoJugador : public Comportamiento{
     }
   }
 
+  // PARA SABER HACIA DÓNDE MOVERNOS CUANDO NO ESTAMOS BUSCANDO CASILLA DE POSICIONAMIENTO
   Action GirarMenosVisitada(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &current_state, vector<vector<unsigned char>> &matriz, vector<vector<unsigned int>> &mapaVisitas){
-
-    if (!zapatillas and terreno[2]=='D'){
+    
+    if (!zapatillas and terreno[2]=='D' and superficie[2]=='_'){
       proximaAccion=actFORWARD;
     }
     else if (!zapatillas and terreno[1]=='D'){
@@ -291,7 +292,7 @@ class ComportamientoJugador : public Comportamiento{
     else if (!zapatillas and terreno[3]=='D'){
       proximaAccion=actTURN_SR;
     }
-    else if (!bikini and terreno[2]=='K'){
+    else if (!bikini and terreno[2]=='K' and superficie[2]=='_'){
       proximaAccion=actFORWARD;
     }
     else if (!bikini and terreno[1]=='K'){
@@ -322,7 +323,7 @@ class ComportamientoJugador : public Comportamiento{
       }
     }
     else if (terreno[1]=='M' and terreno[3]=='M'){
-      if (terreno[2]!='P'){
+      if (terreno[2]!='P' and superficie[2]=='_'){
         proximaAccion=actFORWARD;
         return proximaAccion;
       }
@@ -331,8 +332,8 @@ class ComportamientoJugador : public Comportamiento{
         return proximaAccion;
       }
     }
-    else if (terreno[1]=='M' and terreno[2]!='P'){
-      if (terreno[7]=='M'){
+    else if (terreno[1]=='M' and terreno[2]!='P' ){
+      if (terreno[7]=='M' and superficie[2]=='_'){
         proximaAccion=actFORWARD;
         return proximaAccion;
       }
@@ -340,7 +341,7 @@ class ComportamientoJugador : public Comportamiento{
       return proximaAccion;
     }
     else if (terreno[3]=='M' and terreno[2]!='P'){
-      if (terreno[5]=='M'){
+      if (terreno[5]=='M' and superficie[2]=='_'){
         proximaAccion=actFORWARD;
         return proximaAccion;
       }
@@ -348,7 +349,7 @@ class ComportamientoJugador : public Comportamiento{
       return proximaAccion;
     }
 
-    else if (terreno[2]!='P'){
+    else if (terreno[2]!='P' and superficie[2]=='_'){
     switch (current_state.brujula){
       case norte:
         // SUELO PEDREGOSO
@@ -358,7 +359,7 @@ class ComportamientoJugador : public Comportamiento{
             if (terreno[3]=='S'){
               // Si la 2 es la menos visitada
               if (mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)-1] and
-                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1]){
+                mapaVisitas[(current_state.fil)-1][(current_state.col)]<mapaVisitas[(current_state.fil)-1][(current_state.col)+1] ){
                 proximaAccion=actFORWARD;
               }
               // Si la 1 es la menos visitada
@@ -424,7 +425,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -493,10 +494,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -565,7 +566,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -961,7 +962,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -1030,10 +1031,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -1102,7 +1103,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -1498,7 +1499,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -1567,10 +1568,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -1639,7 +1640,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -2035,7 +2036,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -2104,10 +2105,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -2176,7 +2177,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -2572,7 +2573,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -2641,10 +2642,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -2713,7 +2714,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -3109,7 +3110,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -3178,10 +3179,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -3250,7 +3251,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -3646,7 +3647,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -3715,10 +3716,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -3787,7 +3788,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -4183,7 +4184,7 @@ class ComportamientoJugador : public Comportamiento{
         }
 
         // CASILLA BIKINI
-        else if (!bikini and terreno[2]=='K'){
+        /*else if (!bikini and terreno[2]=='K'){
           if (terreno[1]=='K'){
             // Si las tres casillas coinciden
             if (terreno[3]=='K'){
@@ -4252,10 +4253,10 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!bikini and terreno[3]=='K'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA ZAPATILLAS
-        else if (!zapatillas and terreno[2]=='D'){
+        /*else if (!zapatillas and terreno[2]=='D'){
           if (terreno[1]=='D'){
             // Si las tres casillas coinciden
             if (terreno[3]=='D'){
@@ -4324,7 +4325,7 @@ class ComportamientoJugador : public Comportamiento{
         // Si sólo lo es la 3
         else if (!zapatillas and terreno[3]=='D'){
           proximaAccion=actTURN_SR;
-        }
+        }*/
 
         // CASILLA POSICIONAMIENTO
         else if (terreno[2]=='G' and !posicionamiento){
@@ -4661,12 +4662,13 @@ class ComportamientoJugador : public Comportamiento{
     return proximaAccion;
   }
 
+  // PARA SABER HACIA DÓNDE MOVERNOS SI ESTAMOS BUSCANDO CASILLA DE POSICIONAMIENTO
   Action GirarCiego(const vector<unsigned char> &terreno, const vector<unsigned char> &superficie, const state &state_ciego, vector<vector<unsigned char>> &matriz, vector<vector<unsigned char>> &mapaCiego){
     
     // Si hay casilla de posicionamiento a la vista, vamos hacia ella
     if (RodeadoPosicionamiento(terreno)){
       if (terreno[2]!='M' and terreno[2]!='P' and (terreno[2]=='G' or terreno[6]=='G' or terreno[12]=='G' or terreno[5]=='G'
-        or terreno[7]=='G' or terreno[10]=='G' or terreno[11]=='G' or terreno[13]=='G' or terreno[14]=='G')){
+        or terreno[7]=='G' or terreno[10]=='G' or terreno[11]=='G' or terreno[13]=='G' or terreno[14]=='G') and superficie[2]=='_'){
         proximaAccion=actFORWARD;
       }
       else if (terreno[1]=='G' or terreno[4]=='G' or terreno[9]=='G'){
@@ -4687,7 +4689,7 @@ class ComportamientoJugador : public Comportamiento{
         contador_pos++;
       }
       else {
-        if (terreno[2]=='K' and !bikini){
+        if (terreno[2]=='K' and !bikini and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='K' and !bikini){
@@ -4696,7 +4698,7 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='K' and !bikini){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='D' and !zapatillas){
+        else if (terreno[2]=='D' and !zapatillas and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='D' and !zapatillas){
@@ -4705,7 +4707,7 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='D' and !zapatillas){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='S'){
+        else if (terreno[2]=='S' and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='S'){
@@ -4714,7 +4716,7 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='S'){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='T'){
+        else if (terreno[2]=='T' and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='T'){
@@ -4723,7 +4725,7 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='T'){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='A' and bikini){
+        else if (terreno[2]=='A' and bikini and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='A' and bikini){
@@ -4732,7 +4734,7 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='A' and bikini){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='B'){
+        else if (terreno[2]=='B' and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='B'){
@@ -4741,7 +4743,7 @@ class ComportamientoJugador : public Comportamiento{
         else if (terreno[3]=='B'){
           proximaAccion=actTURN_SR;
         }
-        else if (terreno[2]=='A' and !bikini){
+        else if (terreno[2]=='A' and !bikini and superficie[2]=='_'){
           proximaAccion=actFORWARD;
         }
         else if (terreno[1]=='A' and !bikini){
